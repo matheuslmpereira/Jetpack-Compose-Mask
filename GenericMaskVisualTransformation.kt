@@ -1,18 +1,14 @@
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 
 class GenericMaskVisualTransformation(
-    private val mask: String
+    private val mask: String,
+    private val maskSlotSignal: Char = '#'
 ) : VisualTransformation {
 
     private val offsetMapping = getOffsetMapping(mask)
@@ -26,11 +22,10 @@ class GenericMaskVisualTransformation(
         var maskedString = ""
 
         for (maskChar in mask) {
-            if (maskChar != '#') {
+            if (maskChar != maskSlotSignal) {
                 maskedString += maskChar
             } else {
                 if (textCharIndex >= unmasked.length) break
-
                 maskedString += unmasked[textCharIndex]
                 textCharIndex++
             }
@@ -53,11 +48,10 @@ class GenericMaskVisualTransformation(
             var dataCount = 0
 
             for (maskChar in mask) {
-                if (maskChar != '#') maskOffsetCount++
-                else dataCount++
-
-                if (dataCount > offset) break
+                if (maskChar != maskSlotSignal) maskOffsetCount++
+                else if (++dataCount > offset) break
             }
+
             return maskOffsetCount
         }
     }
@@ -69,13 +63,10 @@ class GenericMaskVisualTransformation(
 fun previewGenericMaskVisualTransformation() {
     val testMask = "##/##/####"
     var text by remember { mutableStateOf(TextFieldValue("")) }
-    val dateSize = 8
+    val dateSize = testMask.count { char -> char == '#' }
 
     TextField(
         value = text,
-        modifier = Modifier
-            .height(52.dp)
-            .fillMaxWidth(),
         onValueChange = {
             if (it.text.length <= dateSize) text = it
         },
@@ -83,7 +74,6 @@ fun previewGenericMaskVisualTransformation() {
             Text(text = testMask)
         },
         visualTransformation = GenericMaskVisualTransformation(testMask),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        shape = RoundedCornerShape(8.dp)
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
     )
 }
