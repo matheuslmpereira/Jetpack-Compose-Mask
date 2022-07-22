@@ -40,7 +40,7 @@ class GenericMaskVisualTransformation(
         }
 
         override fun transformedToOriginal(offset: Int): Int {
-            return offset - offsetMaskCount(offset)
+            return offset - mask.take(offset).count { it != maskSlotSignal }
         }
 
         private fun offsetMaskCount(offset: Int): Int {
